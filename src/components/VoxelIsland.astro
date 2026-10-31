@@ -1,0 +1,307 @@
+---
+// A floating voxel island with an orbiting block, drawn as isometric SVG at build time.
+type Material = 'grass' | 'dirt' | 'stone' | 'deep' | 'wood' | 'leaf' | 'gold' | 'glow';
+type Poly = { points: string; fill: string };
+
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+
+const A = 16; // half the on-screen width of one tile
+const H = 18; // on-screen height of one block
+
+// Top, left and right face colours.
+const palette: Record<Material, [string, string, string]> = {
+  grass: ['#7bd38c', '#8a6245', '#6e4c35'],
+  dirt: ['#a3754f', '#8a6245', '#6e4c35'],
+  stone: ['#8d97ad', '#6c7590', '#565e77'],
+  deep: ['#5d6680', '#474f68', '#383f55'],
+  wood: ['#b98c5f', '#8b6440', '#6d4d31'],
+  leaf: ['#5cc483', '#3f9a63', '#327c50'],
+  gold: ['#ffe39a', '#f7c35c', '#d9982b'],
+  glow: ['#c8fff5', '#5ee6d0', '#33c4ad'],
+};
+const grassEdge = ['#5aa86a', '#4a8f58'];
+const textured = new Set<Material>(['grass', 'dirt', 'stone', 'deep', 'leaf', 'wood']);
+
+const hash = (x: number, y: number, z: number) => {
+  let h = Math.imul(x, 374761393) ^ Math.imul(y, 668265263) ^ Math.imul(z, 1274126177);
+  h = Math.imul(h ^ (h >>> 13), 1274126177);
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+};
+
+const shade = (hex: string, amount: number) => {
+  const n = parseInt(hex.slice(1), 16);
+  const channel = (c: number) => Math.round(Math.min(255, Math.max(0, c * (1 + amount))));
+  const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map(channel);
+  return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, '0')}`;
+};
+
+// World to screen: +x runs down-right, +y down-left, +z straight up.
+const project = (x: number, y: number, z: number) => [(x - y) * A, ((x + y) * A) / 2 - z * H];
+const toPoints = (corners: number[][]) =>
+  corners.map(([x, y, z]) => project(x, y, z).map((n) => n.toFixed(2)).join(',')).join(' ');
+
+// --- Build the island ---------------------------------------------------------------
+
+const _ = null;
+// Height of the top block in each column (rows are y, columns are x).
+const surface: (number | null)[][] = [
+  [_, _, 0, 0, 1, _, _],
+  [_, 0, 0, 1, 2, 1, _],
+  [0, 0, 0, 1, 2, 2, 1],
+  [0, 0, 0, 0, 1, 1, 1],
+  [0, 0, 0, 0, 0, 0, 0],
+  [_, 0, 0, 0, 0, 0, _],
+  [_, _, 0, 0, 0, _, _],
+];
+
+const blocks = new Map<string, Material>();
+const key = (x: number, y: number, z: number) => `${x},${y},${z}`;
+const put = (x: number, y: number, z: number, m: Material) => blocks.set(key(x, y, z), m);
+const has = (x: number, y: number, z: number) => blocks.has(key(x, y, z));
+
+surface.forEach((row, y) =>
+  row.forEach((top, x) => {
+    if (top === null) return;
+    // The underside tapers to a point, deepest in the middle.
+    const d = Math.hypot(x - 3, y - 3);
+    const bottom = d < 1.2 ? -4 : d < 2.1 ? -3 : d < 2.9 ? -2 : -1;
+    for (let z = bottom; z <= top; z++) {
+      put(x, y, z, z === top ? 'grass' : z >= -1 ? 'dirt' : z >= -3 ? 'stone' : 'deep');
+    }
+  }),
+);
+put(3, 3, -5, 'deep');
+
+// A tree on the left.
+for (let z = 1; z <= 3; z++) put(1, 4, z, 'wood');
+for (let dx = -1; dx <= 1; dx++) {
+  for (let dy = -1; dy <= 1; dy++) {
+    if (dx || dy) put(1 + dx, 4 + dy, 3, 'leaf');
+    if (!dx || !dy) put(1 + dx, 4 + dy, 4, 'leaf');
+  }
+}
+put(1, 4, 5, 'leaf');
+
+// A ruined tower with a beacon on the hill.
+put(4, 1, 3, 'stone');
+put(4, 1, 4, 'stone');
+put(4, 1, 5, 'glow');
+put(5, 2, 3, 'stone');
+
+// A gold crystal out front.
+put(5, 4, 1, 'gold');
+put(5, 4, 2, 'gold');
+
+// --- Turn blocks into faces --------------------------------------------------------
+
+const cube = (x: number, y: number, z: number, m: Material, size = 1, cull = true): Poly[] => {
+  const s = size;
+  const v = textured.has(m) ? (hash(x, y, z) - 0.5) * 0.14 : 0;
+  const [top, left, right] = palette[m].map((c) => shade(c, v));
+  const polys: Poly[] = [];
+
+  if (!cull || !has(x, y, z + 1)) {
+    polys.push({
+      fill: top,
+      points: toPoints([[x, y, z + s], [x + s, y, z + s], [x + s, y + s, z + s], [x, y + s, z + s]]),
+    });
+  }
+  if (!cull || !has(x, y + 1, z)) {
+    polys.push({
+      fill: left,
+      points: toPoints([[x, y + s, z + s], [x + s, y + s, z + s], [x + s, y + s, z], [x, y + s, z]]),
+    });
+    if (m === 'grass') {
+      polys.push({
+        fill: shade(grassEdge[0], v),
+        points: toPoints([[x, y + s, z + s], [x + s, y + s, z + s], [x + s, y + s, z + s * 0.7], [x, y + s, z + s * 0.7]]),
+      });
+    }
+  }
+  if (!cull || !has(x + 1, y, z)) {
+    polys.push({
+      fill: right,
+      points: toPoints([[x + s, y + s, z + s], [x + s, y, z + s], [x + s, y, z], [x + s, y + s, z]]),
+    });
+    if (m === 'grass') {
+      polys.push({
+        fill: shade(grassEdge[1], v),
+        points: toPoints([[x + s, y + s, z + s], [x + s, y, z + s], [x + s, y, z + s * 0.7], [x + s, y + s, z + s * 0.7]]),
+      });
+    }
+  }
+  return polys;
+};
+
+// Painter's order: back to front, bottom to top.
+const ordered = [...blocks.entries()]
+  .map(([k, m]) => {
+    const [x, y, z] = k.split(',').map(Number);
+    return { x, y, z, m };
+  })
+  .sort((a, b) => a.x + a.y - (b.x + b.y) || a.z - b.z);
+
+const island = ordered.flatMap((b) => cube(b.x, b.y, b.z, b.m));
+
+// Soft light around the glowing blocks.
+const glows = ordered
+  .filter((b) => b.m === 'gold' || b.m === 'glow')
+  .map((b) => {
+    const [cx, cy] = project(b.x + 0.5, b.y + 0.5, b.z + 0.5);
+    return { cx, cy, gradient: b.m === 'gold' ? 'url(#glow-gold)' : 'url(#glow-aqua)' };
+  });
+
+// A small block centred on the origin, moved along the orbit.
+const moon = cube(-0.25, -0.25, -0.25, 'gold', 0.5, false);
+
+// Little floating blocks off to the sides.
+const satellites = [
+  { polys: cube(-7.2, 2.6, 1.2, 'grass', 0.7, false), className: 'sat' },
+  { polys: cube(9.7, 0.3, -0.4, 'stone', 0.55, false), className: 'sat sat-late' },
+];
+
+// --- Orbit ------------------------------------------------------------------------
+
+const [cx, cy] = project(3.5, 3.5, 0.2);
+const rx = 8.6 * A;
+const ry = rx * 0.27;
+const backArc = `M${-rx} 0 A${rx} ${ry} 0 0 1 ${rx} 0`;
+const frontArc = `M${rx} 0 A${rx} ${ry} 0 0 1 ${-rx} 0`;
+const tilt = `translate(${cx} ${cy}) rotate(-9)`;
+
+// Fit the view box around everything.
+const allPoints = [...island, ...satellites.flatMap((s) => s.polys)].flatMap((p) =>
+  p.points.split(' ').map((pt) => pt.split(',').map(Number)),
+);
+const pad = 28;
+const minX = Math.min(cx - rx, ...allPoints.map(([x]) => x)) - pad;
+const maxX = Math.max(cx + rx, ...allPoints.map(([x]) => x)) + pad;
+const minY = Math.min(...allPoints.map(([, y]) => y)) - pad;
+const maxY = Math.max(...allPoints.map(([, y]) => y)) + pad;
+const viewBox = [minX, minY, maxX - minX, maxY - minY].map((n) => n.toFixed(1)).join(' ');
+---
+
+<svg
+  viewBox={viewBox}
+  class={className}
+  role="img"
+  aria-label="A floating voxel island with a tree, a glowing tower and a gold crystal, orbited by a small gold block"
+>
+  <defs>
+    <radialGradient id="glow-gold">
+      <stop offset="0" stop-color="#ffd98a" stop-opacity="0.55" />
+      <stop offset="1" stop-color="#ffd98a" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="glow-aqua">
+      <stop offset="0" stop-color="#9ff5e6" stop-opacity="0.6" />
+      <stop offset="1" stop-color="#9ff5e6" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="halo">
+      <stop offset="0" stop-color="#f7c35c" stop-opacity="0.16" />
+      <stop offset="0.55" stop-color="#33c4ad" stop-opacity="0.07" />
+      <stop offset="1" stop-color="#33c4ad" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <circle cx={cx} cy={cy - 20} r={rx * 1.05} fill="url(#halo)" />
+
+  {
+    satellites.map((s) => (
+      <g class={s.className}>
+        {s.polys.map((p) => <polygon points={p.points} fill={p.fill} stroke={p.fill} stroke-width="0.6" stroke-linejoin="round" />)}
+      </g>
+    ))
+  }
+
+  <g class="island">
+    <g transform={tilt}>
+      <path d={backArc} class="orbit" fill="none" stroke="#5ee6d0" stroke-opacity="0.35" stroke-width="1.5" />
+      <g class="moon">
+        {moon.map((p) => <polygon points={p.points} fill={p.fill} stroke={p.fill} stroke-width="0.4" />)}
+        <animateMotion dur="16s" repeatCount="indefinite" path={backArc} keyPoints="0;1;1" keyTimes="0;0.5;1" calcMode="linear" />
+        <animate attributeName="opacity" dur="16s" repeatCount="indefinite" values="0.7;0" keyTimes="0;0.5" calcMode="discrete" />
+      </g>
+    </g>
+
+    {island.map((p) => <polygon points={p.points} fill={p.fill} stroke={p.fill} stroke-width="0.6" stroke-linejoin="round" />)}
+
+    {glows.map((g) => <circle class="pulse" cx={g.cx} cy={g.cy} r="26" fill={g.gradient} />)}
+
+    <g transform={tilt}>
+      <path d={frontArc} class="orbit" fill="none" stroke="#5ee6d0" stroke-opacity="0.8" stroke-width="1.5" />
+      <g class="moon">
+        <circle r="16" fill="url(#glow-gold)" />
+        {moon.map((p) => <polygon points={p.points} fill={p.fill} stroke={p.fill} stroke-width="0.4" />)}
+        <animateMotion dur="16s" repeatCount="indefinite" path={frontArc} keyPoints="0;0;1" keyTimes="0;0.5;1" calcMode="linear" />
+        <animate attributeName="opacity" dur="16s" repeatCount="indefinite" values="0;1" keyTimes="0;0.5" calcMode="discrete" />
+      </g>
+    </g>
+  </g>
+</svg>
+
+<style>
+  .orbit {
+    stroke-dasharray: 2 7;
+    stroke-linecap: round;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .island,
+    .sat {
+      animation: bob 8s ease-in-out infinite;
+    }
+
+    .sat {
+      animation-duration: 6s;
+    }
+
+    .sat-late {
+      animation-delay: -3s;
+      animation-duration: 7s;
+    }
+
+    .orbit {
+      animation: drift 40s linear infinite;
+    }
+
+    .pulse {
+      animation: pulse 4s ease-in-out infinite;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .moon {
+      display: none;
+    }
+  }
+
+  @keyframes bob {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-8px);
+    }
+  }
+
+  @keyframes drift {
+    to {
+      stroke-dashoffset: -180;
+    }
+  }
+
+  @keyframes pulse {
+    0%,
+    100% {
+      opacity: 0.65;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+</style>

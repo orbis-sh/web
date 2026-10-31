@@ -1,0 +1,87 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Bricolage Grotesque Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --color-ink-950: #060912;
+  --color-ink-900: #0a0f1d;
+  --color-ink-800: #10182b;
+  --color-ink-700: #18223a;
+  --color-ink-600: #243150;
+
+  --color-mist-50: #f3f5fb;
+  --color-mist-200: #c9d0e2;
+  --color-mist-400: #8d98b4;
+  --color-mist-500: #6b7694;
+
+  --color-gold-300: #ffdc8f;
+  --color-gold-400: #f7c35c;
+  --color-gold-500: #e9a531;
+  --color-gold-700: #9c6714;
+
+  --color-aqua-300: #9ff5e6;
+  --color-aqua-400: #5ee6d0;
+  --color-aqua-500: #33c4ad;
+
+  --animate-marquee: marquee 48s linear infinite;
+
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-ink-950 font-sans text-mist-50 antialiased;
+  }
+
+  ::selection {
+    @apply bg-gold-400 text-ink-950;
+  }
+}
+
+@layer components {
+  /* A scattered starfield: one star per tile, with tile sizes that don't line up. */
+  .starfield {
+    background-image:
+      radial-gradient(circle at 12% 18%, rgb(255 255 255 / 0.7) 0 1px, transparent 1.6px),
+      radial-gradient(circle at 68% 42%, rgb(255 255 255 / 0.45) 0 1px, transparent 1.6px),
+      radial-gradient(circle at 38% 76%, rgb(255 220 143 / 0.6) 0 1.2px, transparent 1.8px),
+      radial-gradient(circle at 86% 88%, rgb(255 255 255 / 0.35) 0 1px, transparent 1.6px),
+      radial-gradient(circle at 52% 8%, rgb(159 245 230 / 0.5) 0 1px, transparent 1.6px);
+    background-size:
+      233px 233px,
+      317px 317px,
+      401px 401px,
+      179px 179px,
+      269px 269px;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-5 py-3 text-base font-semibold transition duration-150 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold-400;
+  }
+
+  /* Chunky block shadow that presses down on click. */
+  .btn-primary {
+    @apply bg-gold-400 text-ink-950 shadow-[0_4px_0_var(--color-gold-700)] hover:-translate-y-0.5 hover:bg-gold-300 hover:shadow-[0_6px_0_var(--color-gold-700)] active:translate-y-1 active:shadow-[0_0_0_var(--color-gold-700)];
+  }
+
+  .btn-secondary {
+    @apply border border-ink-600 bg-ink-800/60 text-mist-50 shadow-[0_4px_0_var(--color-ink-700)] hover:-translate-y-0.5 hover:border-mist-500 hover:shadow-[0_6px_0_var(--color-ink-700)] active:translate-y-1 active:shadow-none;
+  }
+
+  .eyebrow {
+    @apply font-mono text-sm text-gold-400;
+  }
+}

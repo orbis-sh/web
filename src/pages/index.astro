@@ -1,0 +1,293 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Logo from '../components/Logo.astro';
+import Icon from '../components/Icon.astro';
+import PixelIcon from '../components/PixelIcon.astro';
+import Block from '../components/Block.astro';
+import VoxelIsland from '../components/VoxelIsland.astro';
+import { site } from '../site';
+
+const nav = [
+  { label: 'Mods', href: '#mods' },
+  { label: 'Open source', href: '#open-source' },
+  { label: 'Get started', href: '#get-started' },
+];
+
+const ticker = [
+  'Classes',
+  'Talent trees',
+  'Quests',
+  'NPC dialogue',
+  'Parties',
+  'Guilds',
+  'Loot tables',
+  'Gear tiers',
+  'Player economy',
+  'Dungeons',
+  'Boss fights',
+  'Professions',
+];
+
+const features = [
+  {
+    tag: 'classes',
+    title: 'Classes & progression',
+    body: 'Classes, skills and talent trees that give every player a build to chase.',
+  },
+  {
+    tag: 'quests',
+    title: 'Quests & storylines',
+    body: 'Quest chains and NPC dialogue that turn a map into a world worth exploring.',
+  },
+  {
+    tag: 'social',
+    title: 'Parties & guilds',
+    body: 'Group up, share progress and build something bigger together.',
+  },
+  {
+    tag: 'loot',
+    title: 'Loot & economy',
+    body: 'Loot tables, gear tiers and a player-driven economy to trade it all in.',
+  },
+  {
+    tag: 'dungeons',
+    title: 'Dungeons & bosses',
+    body: 'Instanced dungeons with encounters worth gearing up for.',
+  },
+  {
+    tag: 'config',
+    title: 'Tuned by you',
+    body: 'Rates, rewards and balance live in config files, so you can shape it without touching code.',
+  },
+];
+
+const principles: { title: string; body: string; colors: [string, string, string] }[] = [
+  {
+    title: 'Free to run',
+    body: 'No paywalls, no license keys, no premium tier. Drop it in and play.',
+    colors: ['#ffe39a', '#f7c35c', '#d9982b'],
+  },
+  {
+    title: 'Made to fork',
+    body: 'Readable, documented code that is meant to be extended, not just installed.',
+    colors: ['#c8fff5', '#5ee6d0', '#33c4ad'],
+  },
+  {
+    title: 'Server-first',
+    body: 'Built around what server owners need: sane configs, performance and admin tools.',
+    colors: ['#7bd38c', '#8a6245', '#6e4c35'],
+  },
+  {
+    title: 'Built in public',
+    body: 'Roadmaps, issues and discussions all happen in the open.',
+    colors: ['#8d97ad', '#6c7590', '#565e77'],
+  },
+];
+
+const steps = [
+  { title: 'Pick a mod', body: 'Browse the repos and grab the latest release for your server.' },
+  { title: 'Drop it in', body: "Add it to your server's mods folder and restart. That's the install." },
+  { title: 'Make it yours', body: 'Tune the config, or fork the source and build your own spin on it.' },
+];
+
+const year = new Date().getFullYear();
+---
+
+<Layout>
+  <header class="sticky top-0 z-50 border-b border-ink-800/80 bg-ink-950/75 backdrop-blur-md">
+    <div class="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
+      <a href="/" aria-label="orbis.sh home" class="rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold-400">
+        <Logo />
+      </a>
+      <nav aria-label="Main" class="flex items-center gap-1 sm:gap-2">
+        {
+          nav.map((item) => (
+            <a href={item.href} class="hidden rounded-md px-3 py-2 text-sm text-mist-400 transition hover:text-mist-50 md:block">
+              {item.label}
+            </a>
+          ))
+        }
+        <a href={site.github} class="ml-2 inline-flex items-center gap-2 rounded-lg border border-ink-600 px-3 py-2 text-sm font-medium text-mist-50 transition hover:border-mist-500">
+          <Icon name="github" class="size-4" />
+          GitHub
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero -->
+    <section class="relative overflow-hidden">
+      <div class="starfield pointer-events-none absolute inset-0 [mask-image:linear-gradient(to_bottom,black_40%,transparent)]"></div>
+      <div class="pointer-events-none absolute -top-40 left-1/2 h-[520px] w-[900px] -translate-x-1/2 rounded-full bg-gold-500/10 blur-3xl"></div>
+
+      <div class="relative mx-auto grid max-w-6xl items-center gap-12 px-4 pt-16 pb-20 sm:px-6 md:pt-24 lg:grid-cols-[1.05fr_1fr] lg:gap-8 lg:pb-28">
+        <div>
+          <p class="inline-flex items-center gap-2 rounded-full border border-ink-600 bg-ink-800/60 px-3 py-1 font-mono text-xs text-mist-200">
+            <span class="size-1.5 rounded-full bg-aqua-400 shadow-[0_0_10px_var(--color-aqua-400)]"></span>
+            Open source · Made for Hytale servers
+          </p>
+          <h1 class="mt-6 text-5xl leading-[0.95] font-semibold tracking-tight text-balance sm:text-6xl lg:text-7xl">
+            Mods for every corner of <span class="text-gold-400">Orbis</span>.
+          </h1>
+          <p class="mt-6 max-w-xl text-lg leading-relaxed text-mist-200">
+            I'm building open-source Hytale mods for MMO RPG servers: classes, quests, guilds, loot and
+            dungeons. Free to run, fork and build on.
+          </p>
+          <div class="mt-9 flex flex-wrap gap-4">
+            <a href={site.github} class="btn btn-primary">
+              <Icon name="github" />
+              Browse on GitHub
+            </a>
+            <a href="#mods" class="btn btn-secondary">
+              See what I'm building
+              <Icon name="arrow" />
+            </a>
+          </div>
+          <p class="mt-8 font-mono text-xs text-mist-500">
+            <span class="text-gold-400">$</span> open source · server-side · built in public
+          </p>
+        </div>
+
+        <VoxelIsland class="mx-auto w-full max-w-[560px]" />
+      </div>
+    </section>
+
+    <!-- Ticker -->
+    <div class="overflow-hidden border-y border-ink-800 bg-ink-900/60 py-4" aria-label="Things I build">
+      <div class="flex w-max motion-safe:animate-marquee">
+        {
+          [0, 1].map((copy) => (
+            <ul class="flex shrink-0 items-center" aria-hidden={copy === 1 ? 'true' : undefined}>
+              {ticker.map((item) => (
+                <li class="flex items-center gap-6 pr-6 font-mono text-sm tracking-wide text-mist-400 uppercase">
+                  {item}
+                  <span class="size-1.5 rotate-45 bg-gold-500" />
+                </li>
+              ))}
+            </ul>
+          ))
+        }
+      </div>
+    </div>
+
+    <!-- What I build -->
+    <section id="mods" class="mx-auto max-w-6xl scroll-mt-20 px-4 py-24 sm:px-6 md:py-32">
+      <div class="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
+        <div class="max-w-2xl">
+          <p class="eyebrow">~/what-i-build</p>
+          <h2 class="mt-3 text-4xl font-semibold tracking-tight text-balance md:text-5xl">The systems behind an MMO world.</h2>
+          <p class="mt-4 text-lg text-mist-200">
+            Persistent progression that keeps players coming back, built one system at a time and out in the open.
+          </p>
+        </div>
+        <div class="grid size-24 shrink-0 place-items-center rounded-2xl border border-ink-600 bg-ink-800 shadow-[0_6px_0_var(--color-ink-700)]">
+          <PixelIcon name="sword" class="size-16" />
+        </div>
+      </div>
+
+      <div class="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {
+          features.map((feature) => (
+            <article class="group relative overflow-hidden rounded-xl border border-ink-700 bg-ink-900 p-6 transition duration-300 hover:border-gold-500/50">
+              <div class="pointer-events-none absolute -top-16 -right-16 size-40 rounded-full bg-gold-500/10 opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-100" />
+              <p class="relative font-mono text-xs text-gold-400/80">{feature.tag}/</p>
+              <h3 class="relative mt-4 text-xl font-semibold">{feature.title}</h3>
+              <p class="relative mt-2 leading-relaxed text-mist-400">{feature.body}</p>
+            </article>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- Open source -->
+    <section id="open-source" class="scroll-mt-20 border-y border-ink-800 bg-ink-900/50">
+      <div class="mx-auto grid max-w-6xl gap-14 px-4 py-24 sm:px-6 md:py-32 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20">
+        <div>
+          <p class="eyebrow">~/open-source</p>
+          <h2 class="mt-3 text-4xl font-semibold tracking-tight text-balance md:text-5xl">Open source, all the way down.</h2>
+          <p class="mt-5 text-lg leading-relaxed text-mist-200">
+            Every mod I ship is public. Read the code, run it on your server, fork it into something new.
+            Found a bug? Open an issue. Fixed one? Send a pull request.
+          </p>
+          <a href={site.github} class="group mt-8 inline-flex items-center gap-2 font-semibold text-gold-400 hover:text-gold-300">
+            Browse the source
+            <Icon name="arrow" class="size-5 transition-transform group-hover:translate-x-1" />
+          </a>
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+          {
+            principles.map((p) => (
+              <div class="rounded-xl border border-ink-700 bg-ink-950/60 p-6">
+                <Block colors={p.colors} class="size-9" />
+                <h3 class="mt-5 text-lg font-semibold">{p.title}</h3>
+                <p class="mt-2 text-sm leading-relaxed text-mist-400">{p.body}</p>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- Get started -->
+    <section id="get-started" class="mx-auto max-w-6xl scroll-mt-20 px-4 py-24 sm:px-6 md:py-32">
+      <div class="max-w-2xl">
+        <p class="eyebrow">~/get-started</p>
+        <h2 class="mt-3 text-4xl font-semibold tracking-tight text-balance md:text-5xl">From repo to running in three steps.</h2>
+      </div>
+
+      <ol class="relative mt-14 grid gap-10 md:grid-cols-3 md:gap-8 md:before:absolute md:before:top-6 md:before:right-[16%] md:before:left-[16%] md:before:border-t md:before:border-dashed md:before:border-ink-600">
+        {
+          steps.map((step, i) => (
+            <li class="relative md:text-center">
+              <span class="relative inline-grid size-12 place-items-center rounded-lg border border-ink-600 bg-ink-800 font-mono text-sm text-gold-400 shadow-[0_4px_0_var(--color-ink-700)]">
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              <h3 class="mt-5 text-xl font-semibold">{step.title}</h3>
+              <p class="mt-2 text-mist-400 md:mx-auto md:max-w-xs">{step.body}</p>
+            </li>
+          ))
+        }
+      </ol>
+    </section>
+
+    <!-- Community -->
+    <section class="mx-auto max-w-6xl px-4 pb-24 sm:px-6 md:pb-32">
+      <div class="relative overflow-hidden rounded-3xl border border-ink-700 bg-gradient-to-b from-ink-800 to-ink-900 px-6 py-16 text-center sm:px-12 md:py-20">
+        <div class="starfield pointer-events-none absolute inset-0 opacity-70"></div>
+        <div class="pointer-events-none absolute -bottom-32 left-1/2 h-64 w-[640px] -translate-x-1/2 rounded-full bg-aqua-500/15 blur-3xl"></div>
+        <div class="relative">
+          <h2 class="mx-auto max-w-2xl text-4xl font-semibold tracking-tight text-balance md:text-5xl">
+            Running a server? Got an idea?
+          </h2>
+          <p class="mx-auto mt-5 max-w-xl text-lg text-mist-200">
+            Tell me what your world is missing. Request a mod, report a bug, or jump in and build one with me.
+          </p>
+          <div class="mt-9 flex flex-wrap justify-center gap-4">
+            <a href={site.github} class="btn btn-primary">
+              <Icon name="github" />
+              Get involved on GitHub
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-ink-800">
+    <div class="mx-auto flex max-w-6xl flex-col gap-8 px-4 py-12 sm:px-6 md:flex-row md:items-center md:justify-between">
+      <div>
+        <Logo />
+        <p class="mt-3 max-w-sm text-sm text-mist-400">Open-source Hytale mods for MMO RPG servers.</p>
+      </div>
+      <nav aria-label="Footer" class="flex gap-6 text-sm text-mist-400">
+        <a href={site.github} class="hover:text-mist-50">GitHub</a>
+        <a href="#mods" class="hover:text-mist-50">Mods</a>
+      </nav>
+    </div>
+    <div class="mx-auto max-w-6xl border-t border-ink-800 px-4 py-6 font-mono text-xs text-mist-500 sm:px-6">
+      © {year} {site.name} · Community project, not affiliated with Hypixel Studios.
+    </div>
+  </footer>
+</Layout>

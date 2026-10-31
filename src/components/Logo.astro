@@ -1,0 +1,25 @@
+---
+// The orbis.sh mark: a gold block with a ring around it, plus the wordmark.
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<span class:list={['inline-flex items-center gap-2.5', className]}>
+  <svg viewBox="0 0 40 32" class="h-8 w-10" aria-hidden="true">
+    <g transform="rotate(-14 20 17)">
+      <path d="M3 18 A17 5.5 0 0 1 37 18" fill="none" stroke="#5ee6d0" stroke-width="1.6" opacity="0.55" />
+    </g>
+    <polygon points="20,4 30,9.5 20,15 10,9.5" fill="#ffdc8f" />
+    <polygon points="10,9.5 20,15 20,27 10,21.5" fill="#f7c35c" />
+    <polygon points="20,15 30,9.5 30,21.5 20,27" fill="#d9982b" />
+    <g transform="rotate(-14 20 17)">
+      <path d="M37 18 A17 5.5 0 0 1 3 18" fill="none" stroke="#5ee6d0" stroke-width="1.6" />
+    </g>
+  </svg>
+  <span class="text-xl font-semibold tracking-tight">
+    orbis<span class="font-mono text-base font-medium text-gold-400">.sh</span>
+  </span>
+</span>

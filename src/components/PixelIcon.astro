@@ -1,0 +1,46 @@
+---
+// Pixel-art icons drawn from character maps. Each character maps to a colour; spaces are empty.
+interface Props {
+  name: 'sword';
+  class?: string;
+}
+
+const icons = {
+  sword: {
+    colors: { b: '#e8eefc', B: '#9aa6c4', g: '#f7c35c', h: '#8b6440', p: '#ffdc8f' },
+    rows: [
+      '           b',
+      '         Bb ',
+      '        Bb  ',
+      '       Bb   ',
+      '      Bb    ',
+      ' g   Bb     ',
+      '  g Bb      ',
+      '   gg       ',
+      '  h g       ',
+      ' h   g      ',
+      'p           ',
+      '            ',
+    ],
+  },
+} as const;
+
+const { name, class: className = 'size-12' } = Astro.props;
+const { colors, rows } = icons[name];
+const width = Math.max(...rows.map((row) => row.length));
+const pixels = rows.flatMap((row, y) =>
+  [...row].flatMap((char, x) => {
+    const fill = colors[char as keyof typeof colors];
+    return fill ? [{ x, y, fill }] : [];
+  }),
+);
+---
+
+<svg
+  viewBox={`0 0 ${width} ${rows.length}`}
+  class={className}
+  shape-rendering="crispEdges"
+  aria-hidden="true"
+>
+  {pixels.map((p) => <rect x={p.x} y={p.y} width="1" height="1" fill={p.fill} />)}
+</svg>
